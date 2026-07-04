@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twibbon MPLS OSIS</title>
+  <title>Twibbon & Caption MPLS SMKS Tunas Harapan</title>
   
   <style>
     * {
@@ -35,8 +35,9 @@
 
     header h1 {
       color: #2563eb;
-      font-size: 24px;
+      font-size: 22px;
       margin-bottom: 5px;
+      text-transform: uppercase;
     }
 
     header p {
@@ -47,35 +48,50 @@
     .step-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      padding: 15px;
+      padding: 20px;
       border-radius: 10px;
       margin-bottom: 20px;
     }
 
-    .step-box h3 {
-      font-size: 16px;
-      margin-bottom: 10px;
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
       color: #1e293b;
     }
 
-    .hint {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 10px;
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: #fff;
+    }
+
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     input[type="file"] {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       background: #fff;
-      border: 1px dashed #cbd5e1;
+      border: 2px dashed #cbd5e1;
       border-radius: 6px;
       cursor: pointer;
     }
 
     .canvas-container {
       width: 100%;
-      aspect-ratio: 1 / 1; /* Menjaga kotak tetap persegi */
+      aspect-ratio: 1 / 1;
       border: 2px solid #cbd5e1;
       border-radius: 8px;
       overflow: hidden;
@@ -99,6 +115,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 20px;
     }
 
     .controls label {
@@ -111,21 +128,75 @@
       cursor: pointer;
     }
 
-    .btn-primary {
+    /* Area Preview Caption */
+    .caption-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      white-space: pre-wrap; /* Menjaga spasi/enter teks tetap rapi */
+      max-height: 150px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      color: #334155;
+      text-align: left;
+    }
+
+    .btn {
       width: 100%;
       padding: 12px;
-      background-color: #2563eb;
-      color: white;
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 10px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: white;
     }
 
     .btn-primary:hover {
       background-color: #1d4ed8;
+    }
+
+    .btn-success {
+      background-color: #16a34a;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #15803d;
+    }
+
+    .btn-secondary {
+      background-color: #64748b;
+      color: white;
+      font-size: 14px;
+      padding: 8px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #475569;
+    }
+
+    /* Menyembunyikan Halaman/Langkah secara dinamis */
+    .hidden {
+      display: none;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -133,90 +204,145 @@
 
   <div class="container">
     <header>
-      <h1>Twibbon MPLS OSIS</h1>
-      <p>Selamat datang siswa baru! Yuk buat twibbon untuk acara MPLS kita.</p>
+      <h1>MPLS SMKS TUNAS HARAPAN</h1>
+      <p>Buat Twibbon dan Ambil Caption Resmi Kamu di Sini!</p>
     </header>
 
-    <div class="step-box">
-      <h3>Langkah 1: Pilih Fotomu</h3>
-      <input type="file" id="upload-input" accept="image/*">
+    <div id="page-form">
+      <div class="step-box">
+        <div class="form-group">
+          <label for="input-nama">Nama Lengkap</label>
+          <input type="text" id="input-nama" placeholder="Contoh: Ahmad Fauzi" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-sekolah">Sekolah Asal</label>
+          <input type="text" id="input-sekolah" placeholder="Contoh: SMPN 1 Jakarta" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-jurusan">Pilih Jurusan</label>
+          <select id="input-jurusan">
+            <option value="TEKNIK KENDARAAN RINGAN">TEKNIK KENDARAAN RINGAN</option>
+            <option value="TEKNIK KOMPUTER DAN JARINGAN">TEKNIK KOMPUTER DAN JARINGAN</option>
+            <option value="MANAJEMEN PERKANTORAN">MANAJEMEN PERKANTORAN</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="upload-input">Pilih Foto Terbaikmu</label>
+          <input type="file" id="upload-input" accept="image/*" required>
+        </div>
+      </div>
+
+      <button id="btn-lanjut" class="btn-primary btn">Lanjut Selesaikan Twibbon ➔</button>
     </div>
 
-    <div class="step-box">
-      <h3>Langkah 2: Sesuaikan Posisi</h3>
-      <p class="hint">💡 Tip: Geser (drag) foto pada kotak di bawah dan gunakan slider untuk zoom.</p>
+    <div id="page-editor" class="hidden">
+      <div class="step-box">
+        <h3 style="font-size: 16px; margin-bottom: 10px;">Atur Posisi Foto</h3>
+        <p class="hint">💡 Tip: Geser foto langsung di dalam kotak dan gunakan slider untuk zoom.</p>
+        
+        <div class="canvas-container">
+          <canvas id="canvas" width="1080" height="1080"></canvas>
+        </div>
+
+        <div class="controls">
+          <label for="zoom-slider">Zoom:</label>
+          <input type="range" id="zoom-slider" min="0.1" max="3" step="0.05" value="1">
+        </div>
+      </div>
+
+      <button id="download-btn" class="btn-primary btn">➔ Download Twibbon (PNG)</button>
       
-      <div class="canvas-container">
-        <canvas id="canvas" width="1080" height="1080"></canvas>
+      <div class="step-box" style="margin-top: 15px;">
+        <h3 style="font-size: 15px; margin-bottom: 8px;">Caption Media Sosial Kamu:</h3>
+        <div id="caption-preview" class="caption-box"></div>
+        <button id="copy-btn" class="btn-success btn">📋 Salin Teks Caption</button>
       </div>
 
-      <div class="controls">
-        <label for="zoom-slider">Zoom Foto:</label>
-        <input type="range" id="zoom-slider" min="0.1" max="3" step="0.05" value="1">
-      </div>
-    </div>
-
-    <div class="step-box">
-      <h3>Langkah 3: Unduh Hasilnya</h3>
-      <button id="download-btn" class="btn-primary">Download Twibbon</button>
+      <button id="btn-kembali" class="btn-secondary btn">⬅ Kembali / Ubah Data</button>
     </div>
   </div>
 
   <script>
-    // 1. Mengambil elemen HTML agar bisa dikontrol oleh JavaScript
+    // Deklarasi Elemen DOM Halaman & Input
+    const pageForm = document.getElementById('page-form');
+    const pageEditor = document.getElementById('page-editor');
+    const btnLanjut = document.getElementById('btn-lanjut');
+    const btnKembali = document.getElementById('btn-kembali');
+    
+    const inputNama = document.getElementById('input-nama');
+    const inputSekolah = document.getElementById('input-sekolah');
+    const inputJurusan = document.getElementById('input-jurusan');
+    const uploadInput = document.getElementById('upload-input');
+
+    // Deklarasi Elemen Canvas & Output
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const uploadInput = document.getElementById('upload-input');
     const zoomSlider = document.getElementById('zoom-slider');
     const downloadBtn = document.getElementById('download-btn');
+    const captionPreview = document.getElementById('caption-preview');
+    const copyBtn = document.getElementById('copy-btn');
 
-    // 2. Variabel penyimpanan gambar dan status
+    // Variabel Gambar & Koordinat Foto
     let frameImage = new Image();
     let userImage = new Image();
     let isUserImageLoaded = false;
-
-    // 3. Pengaturan posisi awal dan skala (zoom) foto pengguna
     let userX = canvas.width / 2;
     let userY = canvas.height / 2;
     let userScale = 1;
-
-    // 4. Variabel untuk mendeteksi aksi geser (drag-and-drop)
     let isDragging = false;
     let startX, startY;
+    let finalCaptionText = ""; // Tempat menyimpan teks hasil generate
 
-    // 5. PENTING: Memuat bingkai secara manual dari folder 'media'
-    frameImage.src = 'media/1783146412556.png';
-    frameImage.onload = () => {
-      draw(); // Menampilkan frame kosong saat web pertama kali dibuka
-    };
+    // Memuat frame PNG manual dari folder 'media/'
+    frameImage.src = 'media/frame.png';
+    frameImage.onload = () => { draw(); };
 
-    // 6. Fungsi Utama: Menggambar ulang semua objek ke dalam Canvas
-    function draw() {
-      // Bersihkan canvas dari sisa gambar sebelumnya
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 1. Logika tombol "Lanjut" (Validasi Form & Pindah Halaman)
+    btnLanjut.addEventListener('click', () => {
+      // Validasi apakah form sudah terisi semua
+      if (!inputNama.value.trim() || !inputSekolah.value.trim() || !uploadInput.files[0]) {
+        alert('Harap isi Nama, Sekolah Asal, dan pilih Foto terlebih dahulu!');
+        return;
+      }
+
+      // Generate teks caption berdasarkan input data diri siswa
+      finalCaptionText = `❗❗I'M READY FOR MPLS SMKS TUNAS HARAPAN❗❗
+
+Assalamu'alaikum warahmatullahi wabarakatuh
+Salam sejahtera bagi kita semua
+Shalom
+Om Swastiastu
+Namo Buddhaya
+Salam Kebajikan
+
+Saya ${inputNama.value.trim()} dari ${inputSekolah.value.trim()} siap ikut serta dalam mengikuti seluruh rangkaian kegiatan Masa Perkenalan Lingkungan Sekolah Tahun 2025 dan menjadi bagian keluarga besar SMKS TUNAS HARAPAN dengan berfokus menekuni bidang ${inputJurusan.value}.
+
+See you in MPLS fellows
+
+Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar
+@osistunasharapan @smkstunasharapan`;
+
+      // Masukkan teks ke kotak pratinjau (preview)
+      captionPreview.innerText = finalCaptionText;
+
+      // Pindahkan tampilan dari Form ke Editor
+      pageForm.classList.add('hidden');
+      pageEditor.classList.remove('hidden');
       
-      // Beri background putih (supaya jika foto bolong, latar belakang tidak transparan hitam)
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Render ulang gambar pada canvas
+      draw();
+    });
 
-      // Gambar foto pengguna (jika siswa sudah memilih foto)
-      if (isUserImageLoaded) {
-        ctx.save();
-        // Geser titik koordinat kartesian ke posisi X dan Y foto saat ini
-        ctx.translate(userX, userY);
-        ctx.scale(userScale, userScale);
-        // Gambar foto pas di titik tengah koordinat baru tersebut
-        ctx.drawImage(userImage, -userImage.width / 2, -userImage.height / 2);
-        ctx.restore();
-      }
+    // 2. Logika tombol "Kembali"
+    btnKembali.addEventListener('click', () => {
+      pageEditor.classList.add('hidden');
+      pageForm.classList.remove('hidden');
+    });
 
-      // Gambar frame Twibbon selalu di posisi paling atas (menimpa foto siswa)
-      if (frameImage.complete) {
-        ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    // 7. Event Listener: Ketika siswa memilih file foto
+    // 3. Logika Membaca File Foto yang diupload
     uploadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -226,54 +352,70 @@
           userImage.onload = () => {
             isUserImageLoaded = true;
             
-            // Set posisi foto otomatis ke tengah kotak canvas
+            // Set posisi awal foto ke tengah canvas
             userX = canvas.width / 2;
             userY = canvas.height / 2;
             
-            // Logika auto-zoom awal agar foto langsung pas memenuhi kotak persegi
+            // Atur zoom awal agar pas dengan ukuran canvas kotak
             const scaleWidth = canvas.width / userImage.width;
             const scaleHeight = canvas.height / userImage.height;
             userScale = Math.max(scaleWidth, scaleHeight);
             
-            // Samakan nilai minimal slider agar user tidak mengecilkan foto terlalu banyak
-            zoomSlider.min = Math.min(scaleWidth, scaleHeight) * 0.5;
+            zoomSlider.min = Math.min(scaleWidth, scaleHeight) * 0.4;
             zoomSlider.max = userScale * 3;
             zoomSlider.value = userScale;
-            
-            draw(); // Refresh canvas
           };
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // 8. Event Listener: Ketika slider zoom digeser
+    // 4. Fungsi Utama: Menggambar ke Canvas
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Set latar belakang dasar putih
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Menggambar Foto Siswa
+      if (isUserImageLoaded) {
+        ctx.save();
+        ctx.translate(userX, userY);
+        ctx.scale(userScale, userScale);
+        ctx.drawImage(userImage, -userImage.width / 2, -userImage.height / 2);
+        ctx.restore();
+      }
+
+      // Menggambar Bingkai/Frame PNG di atas foto siswa
+      if (frameImage.complete) {
+        ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // 5. Kontrol Input Slider Zoom
     zoomSlider.addEventListener('input', (e) => {
       userScale = parseFloat(e.target.value);
-      draw(); // Refresh canvas setiap kali slider bergeser
+      draw();
     });
 
-    // 9. Fungsi Pembantu: Mendapatkan posisi koordinat kursor/sentuhan yang akurat di canvas
+    // 6. Fitur Menggeser Foto (Drag & Drop) via Mouse & Touch HP
     function getPos(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
-      // Jika diakses menggunakan layar sentuh HP
       if (e.touches && e.touches.length > 0) {
         return {
           x: (e.touches[0].clientX - rect.left) * scaleX,
           y: (e.touches[0].clientY - rect.top) * scaleY
         };
       }
-      // Jika diakses menggunakan mouse laptop/PC
       return {
         x: (e.clientX - rect.left) * scaleX,
         y: (e.clientY - rect.top) * scaleY
       };
     }
 
-    // 10. Fungsi Interaksi: Mulai Menggeser
     function startDrag(e) {
       if (!isUserImageLoaded) return;
       isDragging = true;
@@ -282,49 +424,47 @@
       startY = pos.y - userY;
     }
 
-    // 11. Fungsi Interaksi: Sedang Menggeser
     function drag(e) {
       if (!isDragging) return;
-      e.preventDefault(); // Mencegah layar HP ikut tergulung (scrolling) saat geser foto
+      e.preventDefault(); // Mencegah scrolling layar HP saat geser foto
       const pos = getPos(e);
       userX = pos.x - startX;
       userY = pos.y - startY;
       draw();
     }
 
-    // 12. Fungsi Interaksi: Berhenti Menggeser
-    function stopDrag() {
-      isDragging = false;
-    }
+    function stopDrag() { isDragging = false; }
 
-    // Pasang fungsi interaksi ke Event Mouse (PC/Laptop)
     canvas.addEventListener('mousedown', startDrag);
     canvas.addEventListener('mousemove', drag);
     canvas.addEventListener('mouseup', stopDrag);
     canvas.addEventListener('mouseleave', stopDrag);
 
-    // Pasang fungsi interaksi ke Event Touch (HP Android/iOS)
     canvas.addEventListener('touchstart', startDrag);
     canvas.addEventListener('touchmove', drag);
     canvas.addEventListener('touchend', stopDrag);
 
-    // 13. Event Listener: Fungsi Tombol Download Hasil Akhir
+    // 7. Fungsi Tombol Unduh / Download Twibbon
     downloadBtn.addEventListener('click', () => {
-      if (!isUserImageLoaded) {
-        alert('Ups! Harap pilih dan masukkan foto kamu terlebih dahulu.');
-        return;
-      }
-      
-      // Mengubah seluruh isi canvas menjadi data URL berformat PNG gambar berkualitas tinggi
       const dataURL = canvas.toDataURL('image/png');
-      
-      // Membuat link download samaran secara otomatis dan mengekliknya via kode
       const link = document.createElement('a');
-      link.download = 'Twibbon-MPLS-OSIS.png';
+      link.download = `Twibbon_MPLS_${inputNama.value.replace(/\s+/g, '_')}.png`;
       link.href = dataURL;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    });
+
+    // 8. Fungsi Tombol Salin / Copy Teks Caption Otomatis
+    copyBtn.addEventListener('click', () => {
+      if (!finalCaptionText) return;
+      
+      // Menggunakan API Clipboard bawaan browser modern
+      navigator.clipboard.writeText(finalCaptionText).then(() => {
+        alert('🎉 Sukses! Teks caption berhasil disalin ke clipboard HP/Laptop kamu. Tinggal paste saat upload!');
+      }).catch(err => {
+        alert('Gagal menyalin teks otomatis, silakan blok dan salin manual teks di atas.');
+      });
     });
   </script>
 </body>
