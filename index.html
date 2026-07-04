@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twibbon MPLS OSIS</title>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f0f4f8;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    header h1 {
+      color: #2563eb;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .step-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .step-box h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #1e293b;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      background: #fff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .canvas-container {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Menjaga kotak tetap persegi */
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #e2e8f0;
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      display: block;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .controls label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Twibbon MPLS OSIS</h1>
+      <p>Selamat datang siswa baru! Yuk buat twibbon untuk acara MPLS kita.</p>
+    </header>
+
+    <div class="step-box">
+      <h3>Langkah 1: Pilih Fotomu</h3>
+      <input type="file" id="upload-input" accept="image/*">
+    </div>
+
+    <div class="step-box">
+      <h3>Langkah 2: Sesuaikan Posisi</h3>
+      <p class="hint">💡 Tip: Geser (drag) foto pada kotak di bawah dan gunakan slider untuk zoom.</p>
+      
+      <div class="canvas-container">
+        <canvas id="canvas" width="1080" height="1080"></canvas>
+      </div>
+
+      <div class="controls">
+        <label for="zoom-slider">Zoom Foto:</label>
+        <input type="range" id="zoom-slider" min="0.1" max="3" step="0.05" value="1">
+      </div>
+    </div>
+
+    <div class="step-box">
+      <h3>Langkah 3: Unduh Hasilnya</h3>
+      <button id="download-btn" class="btn-primary">Download Twibbon</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Mengambil elemen HTML agar bisa dikontrol oleh JavaScript
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const uploadInput = document.getElementById('upload-input');
+    const zoomSlider = document.getElementById('zoom-slider');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // 2. Variabel penyimpanan gambar dan status
+    let frameImage = new Image();
+    let userImage = new Image();
+    let isUserImageLoaded = false;
+
+    // 3. Pengaturan posisi awal dan skala (zoom) foto pengguna
+    let userX = canvas.width / 2;
+    let userY = canvas.height / 2;
+    let userScale = 1;
+
+    // 4. Variabel untuk mendeteksi aksi geser (drag-and-drop)
+    let isDragging = false;
+    let startX, startY;
+
+    // 5. PENTING: Memuat bingkai secara manual dari folder 'media'
+    frameImage.src = 'media/twibonize1.png';
+    frameImage.onload = () => {
+      draw(); // Menampilkan frame kosong saat web pertama kali dibuka
+    };
+
+    // 6. Fungsi Utama: Menggambar ulang semua objek ke dalam Canvas
+    function draw() {
+      // Bersihkan canvas dari sisa gambar sebelumnya
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Beri background putih (supaya jika foto bolong, latar belakang tidak transparan hitam)
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Gambar foto pengguna (jika siswa sudah memilih foto)
+      if (isUserImageLoaded) {
+        ctx.save();
+        // Geser titik koordinat kartesian ke posisi X dan Y foto saat ini
+        ctx.translate(userX, userY);
+        ctx.scale(userScale, userScale);
+        // Gambar foto pas di titik tengah koordinat baru tersebut
+        ctx.drawImage(userImage, -userImage.width / 2, -userImage.height / 2);
+        ctx.restore();
+      }
+
+      // Gambar frame Twibbon selalu di posisi paling atas (menimpa foto siswa)
+      if (frameImage.complete) {
+        ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // 7. Event Listener: Ketika siswa memilih file foto
+    uploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          userImage.src = event.target.result;
+          userImage.onload = () => {
+            isUserImageLoaded = true;
+            
+            // Set posisi foto otomatis ke tengah kotak canvas
+            userX = canvas.width / 2;
+            userY = canvas.height / 2;
+            
+            // Logika auto-zoom awal agar foto langsung pas memenuhi kotak persegi
+            const scaleWidth = canvas.width / userImage.width;
+            const scaleHeight = canvas.height / userImage.height;
+            userScale = Math.max(scaleWidth, scaleHeight);
+            
+            // Samakan nilai minimal slider agar user tidak mengecilkan foto terlalu banyak
+            zoomSlider.min = Math.min(scaleWidth, scaleHeight) * 0.5;
+            zoomSlider.max = userScale * 3;
+            zoomSlider.value = userScale;
+            
+            draw(); // Refresh canvas
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 8. Event Listener: Ketika slider zoom digeser
+    zoomSlider.addEventListener('input', (e) => {
+      userScale = parseFloat(e.target.value);
+      draw(); // Refresh canvas setiap kali slider bergeser
+    });
+
+    // 9. Fungsi Pembantu: Mendapatkan posisi koordinat kursor/sentuhan yang akurat di canvas
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      // Jika diakses menggunakan layar sentuh HP
+      if (e.touches && e.touches.length > 0) {
+        return {
+          x: (e.touches[0].clientX - rect.left) * scaleX,
+          y: (e.touches[0].clientY - rect.top) * scaleY
+        };
+      }
+      // Jika diakses menggunakan mouse laptop/PC
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    // 10. Fungsi Interaksi: Mulai Menggeser
+    function startDrag(e) {
+      if (!isUserImageLoaded) return;
+      isDragging = true;
+      const pos = getPos(e);
+      startX = pos.x - userX;
+      startY = pos.y - userY;
+    }
+
+    // 11. Fungsi Interaksi: Sedang Menggeser
+    function drag(e) {
+      if (!isDragging) return;
+      e.preventDefault(); // Mencegah layar HP ikut tergulung (scrolling) saat geser foto
+      const pos = getPos(e);
+      userX = pos.x - startX;
+      userY = pos.y - startY;
+      draw();
+    }
+
+    // 12. Fungsi Interaksi: Berhenti Menggeser
+    function stopDrag() {
+      isDragging = false;
+    }
+
+    // Pasang fungsi interaksi ke Event Mouse (PC/Laptop)
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousemove', drag);
+    canvas.addEventListener('mouseup', stopDrag);
+    canvas.addEventListener('mouseleave', stopDrag);
+
+    // Pasang fungsi interaksi ke Event Touch (HP Android/iOS)
+    canvas.addEventListener('touchstart', startDrag);
+    canvas.addEventListener('touchmove', drag);
+    canvas.addEventListener('touchend', stopDrag);
+
+    // 13. Event Listener: Fungsi Tombol Download Hasil Akhir
+    downloadBtn.addEventListener('click', () => {
+      if (!isUserImageLoaded) {
+        alert('Ups! Harap pilih dan masukkan foto kamu terlebih dahulu.');
+        return;
+      }
+      
+      // Mengubah seluruh isi canvas menjadi data URL berformat PNG gambar berkualitas tinggi
+      const dataURL = canvas.toDataURL('image/png');
+      
+      // Membuat link download samaran secara otomatis dan mengekliknya via kode
+      const link = document.createElement('a');
+      link.download = 'Twibbon-MPLS-OSIS.png';
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  </script>
+</body>
+</html>
