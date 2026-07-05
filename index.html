@@ -127,7 +127,7 @@
       height: auto;
       cursor: grab;
       display: block;
-      touch-action: none; /* Mencegah layar bergeser saat mencubit canvas */
+      touch-action: none; /* Mencegah layar scroll saat mencubit canvas */
     }
 
     canvas:active {
@@ -179,7 +179,7 @@
       border-radius: 6px;
       font-size: 13px;
       white-space: pre-wrap;
-      max-height: 150px;
+      max-height: 160px;
       overflow-y: auto;
       margin-bottom: 10px;
       color: #334155;
@@ -219,7 +219,6 @@
       <p>Buat Twibbon dan Ambil Caption Resmi Kamu di Sini!</p>
     </header>
 
-    <!-- HALAMAN 1: FORM DATA DIRI & UPLOAD FOTO -->
     <div id="page-form">
       <div class="step-box">
         <div class="form-group">
@@ -250,11 +249,9 @@
       <button id="btn-lanjut" class="btn-primary btn">Lanjut Selesaikan Twibbon ➔</button>
     </div>
 
-    <!-- HALAMAN 2: EDITOR TWIBBON & DOWNLOAD/COPY -->
     <div id="page-editor" class="hidden">
       <div class="step-box">
         
-        <!-- Bagian Judul dan Logo di atas Canvas -->
         <div class="canvas-header">
           <img src="media/logo.png" alt="Logo SMKS Tunas Harapan" onerror="this.style.display='none'">
           <h3>Area Editor Twibbon</h3>
@@ -265,7 +262,6 @@
           <canvas id="canvas"></canvas>
         </div>
 
-        <!-- Tombol Zoom dan Slider -->
         <div class="controls">
           <label for="zoom-slider">Zoom:</label>
           <button id="btn-zoom-out" class="btn-zoom">-</button>
@@ -286,7 +282,6 @@
     </div>
   </div>
 
-  <!-- Mematuhi struktur ES Module (ESM) -->
   <script type="module">
     const pageForm = document.getElementById('page-form');
     const pageEditor = document.getElementById('page-editor');
@@ -315,16 +310,13 @@
     let userY = 0;
     let userScale = 1;
     
-    // Variabel untuk Drag (Satu Jari / Mouse)
     let isDragging = false;
     let startX, startY;
 
-    // Variabel untuk Pinch-to-Zoom (Dua Jari)
     let initialPinchDistance = null;
     let initialScale = 1;
     let finalCaptionText = "";
 
-    // Load Frame MPLS
     frameImage.src = 'media/frame.png';
     frameImage.onload = () => {
       canvas.width = frameImage.width || 1080;
@@ -338,7 +330,22 @@
         return;
       }
 
-      finalCaptionText = `❗❗I'M READY FOR MPLS SMKS TUNAS HARAPAN❗❗\n\nAssalamu'alaikum Wr. Wb\nsemua salam dalam 6 agama\n\nSaya ${inputNama.value.trim()} dari ${inputSekolah.value.trim()} siap ikut serta dalam mengikuti seluruh rangkaian kegiatan Masa Perkenalan Lingkungan Sekolah Tahun 2025 dan menjadi bagian keluarga besar SMKS TUNAS HARAPAN dengan berfokus menekuni bidang ${inputJurusan.value}.\n\nSee you in MPLS fellows\n\nJangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar`;
+      // PEMBARUAN: Penambahan Salam 6 Agama secara Sangat Lengkap & Akurat!
+      finalCaptionText = `❗❗I'M READY FOR MPLS SMKS TUNAS HARAPAN❗❗
+
+Assalamu'alaikum Warahmatullahi Wabarakatuh,
+Salam Sejahtera bagi kita semua,
+Shalom,
+Om Swastiastu,
+Namo Buddhaya,
+Salam Kebajikan
+
+Saya ${inputNama.value.trim()} dari ${inputSekolah.value.trim()} siap ikut serta dalam mengikuti seluruh rangkaian kegiatan Masa Perkenalan Lingkungan Sekolah Tahun 2026 dan menjadi bagian keluarga besar SMKS TUNAS HARAPAN dengan berfokus menekuni bidang ${inputJurusan.value}.
+
+See you in MPLS fellows!
+
+Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar.
+@smkstunasharapan @osistunasharapanq`;
 
       captionPreview.innerText = finalCaptionText;
       pageForm.classList.add('hidden');
@@ -451,7 +458,6 @@
       if (!isUserImageLoaded) return;
       
       if (e.touches.length === 1) {
-        // Mode Geser (1 Jari)
         isDragging = true;
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -461,8 +467,7 @@
         startX = touchX - userX;
         startY = touchY - userY;
       } else if (e.touches.length === 2) {
-        // Mode Cubit / Pinch (2 Jari)
-        isDragging = false; // Matikan mode geser
+        isDragging = false;
         initialPinchDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -473,10 +478,9 @@
 
     canvas.addEventListener('touchmove', (e) => {
       if (!isUserImageLoaded) return;
-      e.preventDefault(); // Mencegah layar scroll ke bawah saat menyentuh canvas
+      e.preventDefault();
 
       if (e.touches.length === 1 && isDragging) {
-        // Logika Geser (1 Jari)
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
@@ -487,7 +491,6 @@
         userY = touchY - startY;
         draw();
       } else if (e.touches.length === 2 && initialPinchDistance) {
-        // Logika Cubit / Pinch (2 Jari)
         const currentDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -496,21 +499,20 @@
         const scaleChange = currentDistance / initialPinchDistance;
         let newScale = initialScale * scaleChange;
         
-        // Batasi zoom agar tidak lebih kecil/besar dari limit slider
         newScale = Math.max(parseFloat(zoomSlider.min), Math.min(parseFloat(zoomSlider.max), newScale));
         
         userScale = newScale;
-        zoomSlider.value = newScale; // Update posisi slider agar sinkron
+        zoomSlider.value = newScale;
         draw();
       }
     }, { passive: false });
 
     canvas.addEventListener('touchend', (e) => {
       if (e.touches.length < 2) {
-        initialPinchDistance = null; // Reset cubitan jika 1 jari dilepas
+        initialPinchDistance = null;
       }
       if (e.touches.length === 0) {
-        isDragging = false; // Reset gesekan jika semua jari dilepas
+        isDragging = false;
       }
     });
 
