@@ -89,9 +89,31 @@
       cursor: pointer;
     }
 
+    /* Bagian Logo dan Judul di atas Canvas */
+    .canvas-header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .canvas-header img {
+      width: 60px;
+      height: auto;
+      margin-bottom: 8px;
+    }
+
+    .canvas-header h3 {
+      font-size: 16px;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .canvas-header p {
+      font-size: 12px;
+      color: #64748b;
+    }
+
     .canvas-container {
       width: 100%;
-      aspect-ratio: 1 / 1;
       border: 2px solid #cbd5e1;
       border-radius: 8px;
       overflow: hidden;
@@ -102,9 +124,10 @@
 
     canvas {
       width: 100%;
-      height: 100%;
+      height: auto;
       cursor: grab;
       display: block;
+      touch-action: none; /* Mencegah layar bergeser saat mencubit canvas */
     }
 
     canvas:active {
@@ -114,6 +137,7 @@
     .controls {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
     }
@@ -128,14 +152,33 @@
       cursor: pointer;
     }
 
-    /* Area Preview Caption */
+    .btn-zoom {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 6px;
+      background-color: #e2e8f0;
+      color: #333;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-zoom:hover {
+      background-color: #cbd5e1;
+    }
+
     .caption-box {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
       padding: 12px;
       border-radius: 6px;
       font-size: 13px;
-      white-space: pre-wrap; /* Menjaga spasi/enter teks tetap rapi */
+      white-space: pre-wrap;
       max-height: 150px;
       overflow-y: auto;
       margin-bottom: 10px;
@@ -159,45 +202,13 @@
       transform: scale(0.98);
     }
 
-    .btn-primary {
-      background-color: #2563eb;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #1d4ed8;
-    }
-
-    .btn-success {
-      background-color: #16a34a;
-      color: white;
-    }
-
-    .btn-success:hover {
-      background-color: #15803d;
-    }
-
-    .btn-secondary {
-      background-color: #64748b;
-      color: white;
-      font-size: 14px;
-      padding: 8px;
-    }
-
-    .btn-secondary:hover {
-      background-color: #475569;
-    }
-
-    /* Menyembunyikan Halaman/Langkah secara dinamis */
-    .hidden {
-      display: none;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 10px;
-    }
+    .btn-primary { background-color: #2563eb; color: white; }
+    .btn-primary:hover { background-color: #1d4ed8; }
+    .btn-success { background-color: #16a34a; color: white; }
+    .btn-success:hover { background-color: #15803d; }
+    .btn-secondary { background-color: #64748b; color: white; font-size: 14px; padding: 8px; }
+    .btn-secondary:hover { background-color: #475569; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -208,6 +219,7 @@
       <p>Buat Twibbon dan Ambil Caption Resmi Kamu di Sini!</p>
     </header>
 
+    <!-- HALAMAN 1: FORM DATA DIRI & UPLOAD FOTO -->
     <div id="page-form">
       <div class="step-box">
         <div class="form-group">
@@ -238,18 +250,27 @@
       <button id="btn-lanjut" class="btn-primary btn">Lanjut Selesaikan Twibbon ➔</button>
     </div>
 
+    <!-- HALAMAN 2: EDITOR TWIBBON & DOWNLOAD/COPY -->
     <div id="page-editor" class="hidden">
       <div class="step-box">
-        <h3 style="font-size: 16px; margin-bottom: 10px;">Atur Posisi Foto</h3>
-        <p class="hint">💡 Tip: Geser foto langsung di dalam kotak dan gunakan slider untuk zoom.</p>
+        
+        <!-- Bagian Judul dan Logo di atas Canvas -->
+        <div class="canvas-header">
+          <img src="media/logo.png" alt="Logo SMKS Tunas Harapan" onerror="this.style.display='none'">
+          <h3>Area Editor Twibbon</h3>
+          <p>💡 Tip: Geser foto dengan satu jari. Cubit layar dengan dua jari atau gunakan tombol untuk memperbesar/memperkecil foto.</p>
+        </div>
         
         <div class="canvas-container">
-          <canvas id="canvas" width="1080" height="1080"></canvas>
+          <canvas id="canvas"></canvas>
         </div>
 
+        <!-- Tombol Zoom dan Slider -->
         <div class="controls">
           <label for="zoom-slider">Zoom:</label>
+          <button id="btn-zoom-out" class="btn-zoom">-</button>
           <input type="range" id="zoom-slider" min="0.1" max="3" step="0.05" value="1">
+          <button id="btn-zoom-in" class="btn-zoom">+</button>
         </div>
       </div>
 
@@ -265,8 +286,8 @@
     </div>
   </div>
 
-  <script>
-    // Deklarasi Elemen DOM Halaman & Input
+  <!-- Mematuhi struktur ES Module (ESM) -->
+  <script type="module">
     const pageForm = document.getElementById('page-form');
     const pageEditor = document.getElementById('page-editor');
     const btnLanjut = document.getElementById('btn-lanjut');
@@ -277,72 +298,59 @@
     const inputJurusan = document.getElementById('input-jurusan');
     const uploadInput = document.getElementById('upload-input');
 
-    // Deklarasi Elemen Canvas & Output
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const zoomSlider = document.getElementById('zoom-slider');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
     const downloadBtn = document.getElementById('download-btn');
     const captionPreview = document.getElementById('caption-preview');
     const copyBtn = document.getElementById('copy-btn');
 
-    // Variabel Gambar & Koordinat Foto
-    let frameImage = new Image();
-    let userImage = new Image();
+    const frameImage = new Image();
+    const userImage = new Image();
     let isUserImageLoaded = false;
-    let userX = canvas.width / 2;
-    let userY = canvas.height / 2;
+    
+    let userX = 0;
+    let userY = 0;
     let userScale = 1;
+    
+    // Variabel untuk Drag (Satu Jari / Mouse)
     let isDragging = false;
     let startX, startY;
-    let finalCaptionText = ""; // Tempat menyimpan teks hasil generate
 
-    // Memuat frame PNG manual dari folder 'media/'
+    // Variabel untuk Pinch-to-Zoom (Dua Jari)
+    let initialPinchDistance = null;
+    let initialScale = 1;
+    let finalCaptionText = "";
+
+    // Load Frame MPLS
     frameImage.src = 'media/frame.png';
-    frameImage.onload = () => { draw(); };
+    frameImage.onload = () => {
+      canvas.width = frameImage.width || 1080;
+      canvas.height = frameImage.height || 1080;
+      draw();
+    };
 
-    // 1. Logika tombol "Lanjut" (Validasi Form & Pindah Halaman)
     btnLanjut.addEventListener('click', () => {
-      // Validasi apakah form sudah terisi semua
       if (!inputNama.value.trim() || !inputSekolah.value.trim() || !uploadInput.files[0]) {
         alert('Harap isi Nama, Sekolah Asal, dan pilih Foto terlebih dahulu!');
         return;
       }
 
-      // Generate teks caption berdasarkan input data diri siswa
-      finalCaptionText = `❗❗I'M READY FOR MPLS SMKS TUNAS HARAPAN❗❗
+      finalCaptionText = `❗❗I'M READY FOR MPLS SMKS TUNAS HARAPAN❗❗\n\nAssalamu'alaikum Wr. Wb\nsemua salam dalam 6 agama\n\nSaya ${inputNama.value.trim()} dari ${inputSekolah.value.trim()} siap ikut serta dalam mengikuti seluruh rangkaian kegiatan Masa Perkenalan Lingkungan Sekolah Tahun 2025 dan menjadi bagian keluarga besar SMKS TUNAS HARAPAN dengan berfokus menekuni bidang ${inputJurusan.value}.\n\nSee you in MPLS fellows\n\nJangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar`;
 
-Assalamu'alaikum warahmatullahi wabarakatuh
-Salam sejahtera bagi kita semua
-Shalom
-Om Swastiastu
-Namo Buddhaya
-Salam Kebajikan
-
-Saya ${inputNama.value.trim()} dari ${inputSekolah.value.trim()} siap ikut serta dalam mengikuti seluruh rangkaian kegiatan Masa Perkenalan Lingkungan Sekolah Tahun 2025 dan menjadi bagian keluarga besar SMKS TUNAS HARAPAN dengan berfokus menekuni bidang ${inputJurusan.value}.
-
-See you in MPLS fellows
-
-Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar
-@osistunasharapan @smkstunasharapan`;
-
-      // Masukkan teks ke kotak pratinjau (preview)
       captionPreview.innerText = finalCaptionText;
-
-      // Pindahkan tampilan dari Form ke Editor
       pageForm.classList.add('hidden');
       pageEditor.classList.remove('hidden');
-      
-      // Render ulang gambar pada canvas
       draw();
     });
 
-    // 2. Logika tombol "Kembali"
     btnKembali.addEventListener('click', () => {
       pageEditor.classList.add('hidden');
       pageForm.classList.remove('hidden');
     });
 
-    // 3. Logika Membaca File Foto yang diupload
     uploadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -351,34 +359,28 @@ Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar
           userImage.src = event.target.result;
           userImage.onload = () => {
             isUserImageLoaded = true;
-            
-            // Set posisi awal foto ke tengah canvas
             userX = canvas.width / 2;
             userY = canvas.height / 2;
             
-            // Atur zoom awal agar pas dengan ukuran canvas kotak
             const scaleWidth = canvas.width / userImage.width;
             const scaleHeight = canvas.height / userImage.height;
             userScale = Math.max(scaleWidth, scaleHeight);
             
             zoomSlider.min = Math.min(scaleWidth, scaleHeight) * 0.4;
-            zoomSlider.max = userScale * 3;
+            zoomSlider.max = userScale * 4;
             zoomSlider.value = userScale;
+            draw();
           };
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // 4. Fungsi Utama: Menggambar ke Canvas
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Set latar belakang dasar putih
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Menggambar Foto Siswa
       if (isUserImageLoaded) {
         ctx.save();
         ctx.translate(userX, userY);
@@ -387,64 +389,132 @@ Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar
         ctx.restore();
       }
 
-      // Menggambar Bingkai/Frame PNG di atas foto siswa
       if (frameImage.complete) {
         ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
       }
     }
 
-    // 5. Kontrol Input Slider Zoom
+    // --- KONTROL ZOOM (SLIDER & TOMBOL) ---
     zoomSlider.addEventListener('input', (e) => {
       userScale = parseFloat(e.target.value);
       draw();
     });
 
-    // 6. Fitur Menggeser Foto (Drag & Drop) via Mouse & Touch HP
-    function getPos(e) {
+    btnZoomIn.addEventListener('click', () => {
+      let currentScale = parseFloat(zoomSlider.value);
+      let newScale = Math.min(parseFloat(zoomSlider.max), currentScale + 0.1);
+      zoomSlider.value = newScale;
+      userScale = newScale;
+      draw();
+    });
+
+    btnZoomOut.addEventListener('click', () => {
+      let currentScale = parseFloat(zoomSlider.value);
+      let newScale = Math.max(parseFloat(zoomSlider.min), currentScale - 0.1);
+      zoomSlider.value = newScale;
+      userScale = newScale;
+      draw();
+    });
+
+    // --- KONTROL GESER (MOUSE) ---
+    function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      if (e.touches && e.touches.length > 0) {
-        return {
-          x: (e.touches[0].clientX - rect.left) * scaleX,
-          y: (e.touches[0].clientY - rect.top) * scaleY
-        };
-      }
       return {
         x: (e.clientX - rect.left) * scaleX,
         y: (e.clientY - rect.top) * scaleY
       };
     }
 
-    function startDrag(e) {
+    canvas.addEventListener('mousedown', (e) => {
       if (!isUserImageLoaded) return;
       isDragging = true;
-      const pos = getPos(e);
+      const pos = getMousePos(e);
       startX = pos.x - userX;
       startY = pos.y - userY;
-    }
+    });
 
-    function drag(e) {
+    canvas.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      e.preventDefault(); // Mencegah scrolling layar HP saat geser foto
-      const pos = getPos(e);
+      const pos = getMousePos(e);
       userX = pos.x - startX;
       userY = pos.y - startY;
       draw();
-    }
+    });
 
-    function stopDrag() { isDragging = false; }
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('mouseleave', () => isDragging = false);
 
-    canvas.addEventListener('mousedown', startDrag);
-    canvas.addEventListener('mousemove', drag);
-    canvas.addEventListener('mouseup', stopDrag);
-    canvas.addEventListener('mouseleave', stopDrag);
+    // --- KONTROL SENTUH (GESER 1 JARI & CUBIT 2 JARI) ---
+    canvas.addEventListener('touchstart', (e) => {
+      if (!isUserImageLoaded) return;
+      
+      if (e.touches.length === 1) {
+        // Mode Geser (1 Jari)
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touchX = (e.touches[0].clientX - rect.left) * scaleX;
+        const touchY = (e.touches[0].clientY - rect.top) * scaleY;
+        startX = touchX - userX;
+        startY = touchY - userY;
+      } else if (e.touches.length === 2) {
+        // Mode Cubit / Pinch (2 Jari)
+        isDragging = false; // Matikan mode geser
+        initialPinchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialScale = userScale;
+      }
+    }, { passive: false });
 
-    canvas.addEventListener('touchstart', startDrag);
-    canvas.addEventListener('touchmove', drag);
-    canvas.addEventListener('touchend', stopDrag);
+    canvas.addEventListener('touchmove', (e) => {
+      if (!isUserImageLoaded) return;
+      e.preventDefault(); // Mencegah layar scroll ke bawah saat menyentuh canvas
 
-    // 7. Fungsi Tombol Unduh / Download Twibbon
+      if (e.touches.length === 1 && isDragging) {
+        // Logika Geser (1 Jari)
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touchX = (e.touches[0].clientX - rect.left) * scaleX;
+        const touchY = (e.touches[0].clientY - rect.top) * scaleY;
+        
+        userX = touchX - startX;
+        userY = touchY - startY;
+        draw();
+      } else if (e.touches.length === 2 && initialPinchDistance) {
+        // Logika Cubit / Pinch (2 Jari)
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        
+        const scaleChange = currentDistance / initialPinchDistance;
+        let newScale = initialScale * scaleChange;
+        
+        // Batasi zoom agar tidak lebih kecil/besar dari limit slider
+        newScale = Math.max(parseFloat(zoomSlider.min), Math.min(parseFloat(zoomSlider.max), newScale));
+        
+        userScale = newScale;
+        zoomSlider.value = newScale; // Update posisi slider agar sinkron
+        draw();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        initialPinchDistance = null; // Reset cubitan jika 1 jari dilepas
+      }
+      if (e.touches.length === 0) {
+        isDragging = false; // Reset gesekan jika semua jari dilepas
+      }
+    });
+
+    // --- DOWNLOAD & COPY ---
     downloadBtn.addEventListener('click', () => {
       const dataURL = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -455,16 +525,14 @@ Jangan takut membuat kesalahan, karena kesalahan adalah bagian dari belajar
       document.body.removeChild(link);
     });
 
-    // 8. Fungsi Tombol Salin / Copy Teks Caption Otomatis
-    copyBtn.addEventListener('click', () => {
+    copyBtn.addEventListener('click', async () => {
       if (!finalCaptionText) return;
-      
-      // Menggunakan API Clipboard bawaan browser modern
-      navigator.clipboard.writeText(finalCaptionText).then(() => {
-        alert('🎉 Sukses! Teks caption berhasil disalin ke clipboard HP/Laptop kamu. Tinggal paste saat upload!');
-      }).catch(err => {
+      try {
+        await navigator.clipboard.writeText(finalCaptionText);
+        alert('🎉 Sukses! Teks caption berhasil disalin ke clipboard!');
+      } catch (err) {
         alert('Gagal menyalin teks otomatis, silakan blok dan salin manual teks di atas.');
-      });
+      }
     });
   </script>
 </body>
